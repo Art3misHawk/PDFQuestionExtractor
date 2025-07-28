@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Question Extractor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-upload input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-upload-label {
+            display: block;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload-label:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .progress {
+            display: none;
+            margin-top: 1rem;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.3s;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .result {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .questions-preview {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        .question-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        .question-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 PDF Question Extractor</h1>
+        
+        <form id="extractorForm" enctype="multipart/form-data" method="POST" action="/upload">
+            <div class="form-group">
+                <label>API Configuration</label>
+                <input type="password" id="deepseekKey" name="deepseekKey" placeholder="DeepSeek API Key" required>
+                <input type="text" id="airtableKey" name="airtableKey" placeholder="Airtable API Key" required style="margin-top: 0.5rem;">
+                <input type="text" id="airtableBase" name="airtableBase" placeholder="Airtable Base ID" required style="margin-top: 0.5rem;">
+            </div>
+
+            <div class="form-group">
+                <label>Upload PDF</label>
+                <div class="file-upload">
+                    <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required>
+                    <label for="pdfFile" class="file-upload-label">
+                        <div>📄 Click to select PDF file</div>
+                        <small>Drag and drop or click to browse</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="defaultTopic">Default Topic (optional)</label>
+                <select id="defaultTopic" name="defaultTopic">
+                    <option value="">Auto-detect</option>
+                    <option value="Algebra">Algebra</option>
+                    <option value="Calculus">Calculus</option>
+                    <option value="Integration">Integration</option>
+                    <option value="Differentiation">Differentiation</option>
+                    <option value="Probability">Probability</option>
+                    <option value="Statistics">Statistics</option>
+                    <option value="Geometry">Geometry</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn" id="extractBtn">
+                🚀 Extract Questions
+            </button>
+
+            <div class="progress" id="progress" style="display:none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Processing PDF...</p>
+            </div>
+        </form>
+
+        <div class="result" id="result">
+            <div id="resultMessage"></div>
+            <div class="questions-preview" id="questionsPreview"></div>
+        </div>
+    </div>
+
+    <script>
+        // Remove all DeepSeek/OpenAI API calls from frontend. Only handle form submission and result display.
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('extractorForm');
+            const progress = document.getElementById('progress');
+            const result = document.getElementById('result');
+            const resultMessage = document.getElementById('resultMessage');
+            const questionsPreview = document.getElementById('questionsPreview');
+            const extractBtn = document.getElementById('extractBtn');
+            const fileInput = document.getElementById('pdfFile');
+            const fileLabel = document.querySelector('.file-upload-label');
+
+            fileInput.addEventListener('change', (e) => {
+                const fileName = e.target.files[0]?.name || 'No file selected';
+                fileLabel.innerHTML = `<div>📄 ${fileName}</div><small>Click to change file</small>`;
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                progress.style.display = 'block';
+                extractBtn.disabled = true;
+                result.style.display = 'none';
+                resultMessage.textContent = '';
+                questionsPreview.innerHTML = '';
+
+                const formData = new FormData(form);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    progress.style.display = 'none';
+                    extractBtn.disabled = false;
+                    result.style.display = 'block';
+                    if (data.success) {
+                        result.className = 'result success';
+                        resultMessage.textContent = data.message;
+                        if (data.questions && data.questions.length > 0) {
+                            questionsPreview.innerHTML = data.questions.slice(0, 5).map(q => `
+                                <div class="question-item">
+                                    <div class="question-meta">${q.topic} • ${q.difficulty} • ${q.question_type}</div>
+                                    <div>${q.question_text.substring(0, 200)}${q.question_text.length > 200 ? '...' : ''}</div>
+                                </div>
+                            `).join('');
+                            if (data.questions.length > 5) {
+                                questionsPreview.innerHTML += `<p><em>... and ${data.questions.length - 5} more questions</em></p>`;
+                            }
+                        }
+                    } else {
+                        result.className = 'result error';
+                        resultMessage.textContent = 'Error: ' + (data.error || 'Unknown error');
+                    }
+                })
+                .catch(err => {
+                    progress.style.display = 'none';
+                    extractBtn.disabled = false;
+                    result.style.display = 'block';
+                    result.className = 'result error';
+                    resultMessage.textContent = 'Error: ' + err.message;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
