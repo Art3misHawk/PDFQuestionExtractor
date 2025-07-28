@@ -159,7 +159,6 @@
         <form id="extractorForm" enctype="multipart/form-data" method="POST" action="/upload">
             <div class="form-group">
                 <label>API Configuration</label>
-                <input type="password" id="deepseekKey" name="deepseekKey" placeholder="DeepSeek API Key" required>
                 <input type="text" id="airtableKey" name="airtableKey" placeholder="Airtable API Key" required style="margin-top: 0.5rem;">
                 <input type="text" id="airtableBase" name="airtableBase" placeholder="Airtable Base ID" required style="margin-top: 0.5rem;">
             </div>
@@ -246,17 +245,7 @@
                     if (data.success) {
                         result.className = 'result success';
                         resultMessage.textContent = data.message;
-                        if (data.questions && data.questions.length > 0) {
-                            questionsPreview.innerHTML = data.questions.slice(0, 5).map(q => `
-                                <div class="question-item">
-                                    <div class="question-meta">${q.topic} • ${q.difficulty} • ${q.question_type}</div>
-                                    <div>${q.question_text.substring(0, 200)}${q.question_text.length > 200 ? '...' : ''}</div>
-                                </div>
-                            `).join('');
-                            if (data.questions.length > 5) {
-                                questionsPreview.innerHTML += `<p><em>... and ${data.questions.length - 5} more questions</em></p>`;
-                            }
-                        }
+                        questionsPreview.innerHTML = '';
                     } else {
                         result.className = 'result error';
                         resultMessage.textContent = 'Error: ' + (data.error || 'Unknown error');
