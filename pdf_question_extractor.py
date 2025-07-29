@@ -6,6 +6,9 @@ from PIL import Image
 import pytesseract
 import pdf2image
 
+# Configure Tesseract path
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 @dataclass
 class Question:
     question_text: str
@@ -33,13 +36,30 @@ class PDFQuestionExtractor:
         # If no text found, use OCR
         if not text.strip():
             try:
-                images = pdf2image.convert_from_path(pdf_path)
+                # Path to local Poppler installation
+                poppler_path = os.path.join(os.path.dirname(__file__), "poppler", "poppler-24.08.0", "Library", "bin")
+                images = pdf2image.convert_from_path(pdf_path, poppler_path=poppler_path)
+                print(f"   Successfully converted PDF to {len(images)} images")
+                
+                # Check if Tesseract is available
+                try:
+                    # Test if tesseract is working
+                    test_result = pytesseract.get_tesseract_version()
+                    print(f"   Using Tesseract version: {test_result}")
+                except Exception as tesseract_error:
+                    print(f"   Tesseract not available: {tesseract_error}")
+                    return "OCR_NOT_AVAILABLE: Tesseract is not installed. Please install Tesseract OCR to extract text from image-based PDFs."
+                
                 ocr_text = ""
-                for img in images:
-                    ocr_text += pytesseract.image_to_string(img) + "\n"
+                for i, img in enumerate(images, 1):
+                    print(f"   Processing page {i}/{len(images)} with OCR...")
+                    page_text = pytesseract.image_to_string(img)
+                    ocr_text += page_text + "\n"
+                print(f"   OCR completed. Extracted {len(ocr_text)} characters")
                 text = ocr_text
             except Exception as e:
                 print(f"OCR extraction failed: {e}")
+                return f"OCR_FAILED: {str(e)}"
         return text
 
     def upload_raw_text_to_airtable(self, text: str) -> bool:

@@ -3,262 +3,1227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Question Extractor</title>
+    <title>PDF Question Extractor Pro</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --accent-color: #0ea5e9;
+            --success-color: #059669;
+            --error-color: #dc2626;
+            --warning-color: #d97706;
+            --dark-bg: #1e293b;
+            --glass-bg: rgba(30, 41, 59, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-light: #f1f5f9;
+            --text-dark: #334155;
+            --shadow-light: rgba(255, 255, 255, 0.08);
+            --shadow-dark: rgba(0, 0, 0, 0.25);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #64748b 75%, #94a3b8 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
+            color: var(--text-light);
+            position: relative;
+            overflow-x: hidden;
         }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1)"/><stop offset="100%" style="stop-color:rgba(255,255,255,0)"/></radialGradient></defs><circle cx="20" cy="20" r="10" fill="url(%23a)"><animate attributeName="cx" values="20;80;20" dur="10s" repeatCount="indefinite"/></circle><circle cx="80" cy="80" r="15" fill="url(%23a)"><animate attributeName="cy" values="80;20;80" dur="12s" repeatCount="indefinite"/></circle></svg>') repeat;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism container */
+        .main-container {
+            background: rgba(30, 41, 59, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             width: 100%;
-            max-width: 600px;
+            max-width: 900px;
+            overflow: hidden;
+            position: relative;
         }
-        h1 {
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.8), rgba(124, 58, 237, 0.8));
+            padding: 2rem;
             text-align: center;
-            color: #333;
-            margin-bottom: 2rem;
-            font-size: 1.8rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
         }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Settings toggle */
+        .settings-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .settings-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        /* Main content */
+        .content {
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        /* Cards with glassmorphism */
+        .card {
+            background: rgba(30, 41, 59, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            background: rgba(30, 41, 59, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .card-header i {
+            margin-right: 0.75rem;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+        /* Form elements */
         .form-group {
             margin-bottom: 1.5rem;
         }
+
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #555;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.95rem;
         }
+
         input, select, textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 1rem;
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
+
+        input::placeholder {
+            color: rgba(248, 250, 252, 0.5);
+        }
+
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+            transform: translateY(-1px);
+            background: rgba(30, 41, 59, 0.4);
         }
-        .file-upload {
+
+        /* Multi-file upload area */
+        .file-upload-area {
             position: relative;
-            display: inline-block;
-            width: 100%;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(30, 41, 59, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
-        .file-upload input[type=file] {
+
+        .file-upload-area:hover {
+            border-color: var(--accent-color);
+            background: rgba(14, 165, 233, 0.1);
+            transform: scale(1.01);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--success-color);
+            background: rgba(5, 150, 105, 0.1);
+            transform: scale(1.02);
+        }
+
+        .file-upload-input {
             position: absolute;
             opacity: 0;
             width: 100%;
             height: 100%;
             cursor: pointer;
         }
-        .file-upload-label {
-            display: block;
-            padding: 20px;
-            border: 2px dashed #ccc;
+
+        .file-upload-content {
+            pointer-events: none;
+        }
+
+        .file-upload-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            text-align: center;
-            background: #f8f9fa;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            animation: slideIn 0.3s ease;
         }
-        .file-upload-label:hover {
-            border-color: #667eea;
-            background: #f0f2ff;
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 14px 28px;
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .file-info i {
+            margin-right: 0.5rem;
+            color: var(--error-color);
+        }
+
+        .file-remove {
+            background: none;
             border: none;
-            border-radius: 8px;
+            color: var(--error-color);
             cursor: pointer;
-            font-size: 16px;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .file-remove:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
             font-weight: 600;
             width: 100%;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
         .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
         }
+
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-        .progress {
-            display: none;
-            margin-top: 1rem;
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--accent-color), var(--success-color));
         }
+
+        .btn-secondary:hover {
+            box-shadow: 0 12px 24px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Loading spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        /* Progress bars */
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
         .progress-bar {
             width: 100%;
-            height: 8px;
-            background: #e1e5e9;
-            border-radius: 4px;
+            height: 12px;
+            background: var(--glass-bg);
+            border-radius: 6px;
             overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .progress-fill {
             height: 100%;
-            background: #667eea;
+            background: linear-gradient(90deg, var(--accent-color), var(--success-color));
             width: 0%;
-            transition: width 0.3s;
-            animation: pulse 2s infinite;
+            transition: width 0.3s ease;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 20px 20px;
+            animation: progressStripes 1s linear infinite;
         }
-        .result {
+
+        @keyframes progressStripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Results */
+        .result-container {
             margin-top: 2rem;
-            padding: 1rem;
-            border-radius: 8px;
             display: none;
         }
+
+        .result {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .result.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+            background: rgba(5, 150, 105, 0.15);
+            border: 1px solid rgba(5, 150, 105, 0.3);
+            color: var(--text-light);
         }
+
         .result.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: var(--text-light);
         }
-        .questions-preview {
-            max-height: 300px;
+
+        /* Settings panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
+            transition: right 0.3s ease;
+            z-index: 100;
             overflow-y: auto;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .settings-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-content {
+            padding: 2rem;
+        }
+
+        .setting-item {
+            margin-bottom: 2rem;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        /* Export options */
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
             margin-top: 1rem;
         }
-        .question-item {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 4px solid #667eea;
+
+        .export-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.9rem;
         }
-        .question-meta {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 0.5rem;
+
+        .export-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .export-btn i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: var(--text-light);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 200;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                border-radius: 16px;
+            }
+
+            .content {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .export-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📚 PDF Question Extractor</h1>
-        
-        <form id="extractorForm" enctype="multipart/form-data" method="POST" action="/upload">
-            <div class="form-group">
-                <label>API Configuration</label>
-                <input type="text" id="airtableKey" name="airtableKey" placeholder="Airtable API Key" required style="margin-top: 0.5rem;">
-                <input type="text" id="airtableBase" name="airtableBase" placeholder="Airtable Base ID" required style="margin-top: 0.5rem;">
-            </div>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">Processing your files...</div>
+        </div>
+    </div>
 
-            <div class="form-group">
-                <label>Upload PDF</label>
-                <div class="file-upload">
-                    <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required>
-                    <label for="pdfFile" class="file-upload-label">
-                        <div>📄 Click to select PDF file</div>
-                        <small>Drag and drop or click to browse</small>
-                    </label>
-                </div>
+    <!-- Settings panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h3><i class="fas fa-cog"></i> Settings</h3>
+            <button class="settings-close" onclick="toggleSettings()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="settings-content">
+            <div class="setting-item">
+                <label class="setting-label">
+                    <i class="fas fa-save"></i> Save API Keys Locally
+                </label>
+                <input type="checkbox" id="saveKeys" onchange="toggleSaveKeys()">
             </div>
-
-            <div class="form-group">
-                <label for="defaultTopic">Default Topic (optional)</label>
-                <select id="defaultTopic" name="defaultTopic">
-                    <option value="">Auto-detect</option>
-                    <option value="Algebra">Algebra</option>
-                    <option value="Calculus">Calculus</option>
-                    <option value="Integration">Integration</option>
-                    <option value="Differentiation">Differentiation</option>
-                    <option value="Probability">Probability</option>
-                    <option value="Statistics">Statistics</option>
-                    <option value="Geometry">Geometry</option>
+            <div class="setting-item">
+                <label class="setting-label">
+                    <i class="fas fa-palette"></i> Theme
+                </label>
+                <select id="themeSelect" onchange="changeTheme()">
+                    <option value="default">Default</option>
+                    <option value="dark">Dark Mode</option>
+                    <option value="light">Light Mode</option>
                 </select>
             </div>
-
-            <button type="submit" class="btn" id="extractBtn">
-                🚀 Extract Questions
-            </button>
-
-            <div class="progress" id="progress" style="display:none;">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <p id="progressText">Processing PDF...</p>
+            <div class="setting-item">
+                <label class="setting-label">
+                    <i class="fas fa-language"></i> Default Language
+                </label>
+                <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                </select>
             </div>
-        </form>
+        </div>
+    </div>
 
-        <div class="result" id="result">
-            <div id="resultMessage"></div>
-            <div class="questions-preview" id="questionsPreview"></div>
+    <!-- Main container -->
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="settings-toggle" onclick="toggleSettings()">
+                <i class="fas fa-cog"></i>
+            </div>
+            <h1><i class="fas fa-file-pdf"></i> PDF Question Extractor Pro</h1>
+            <p class="subtitle">Advanced AI-powered question extraction with multi-file support</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- API Configuration Card -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-key"></i>
+                    API Configuration
+                </div>
+                <form id="configForm">
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-database"></i> Airtable API Key
+                        </label>
+                        <input type="password" id="airtableKey" name="airtableKey" 
+                               placeholder="Enter your Airtable API Key" 
+                               value="" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-table"></i> Airtable Base ID
+                        </label>
+                        <input type="text" id="airtableBase" name="airtableBase" 
+                               placeholder="Enter your Airtable Base ID" 
+                               value="" autocomplete="off" required>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Multi-File Upload Card -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Upload PDF Files
+                </div>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" id="fileInput" class="file-upload-input" 
+                           accept=".pdf" multiple>
+                    <div class="file-upload-content">
+                        <div class="file-upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div>
+                            <strong>Drop PDF files here or click to browse</strong>
+                        </div>
+                        <small>Support for multiple files • Max 10MB per file</small>
+                    </div>
+                </div>
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <!-- Processing Options Card -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-sliders-h"></i>
+                    Processing Options
+                </div>
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-tags"></i> Default Topic
+                    </label>
+                    <select id="defaultTopic" name="defaultTopic">
+                        <option value="">Auto-detect</option>
+                        <option value="Algebra">Algebra</option>
+                        <option value="Calculus">Calculus</option>
+                        <option value="Integration">Integration</option>
+                        <option value="Differentiation">Differentiation</option>
+                        <option value="Probability">Probability</option>
+                        <option value="Statistics">Statistics</option>
+                        <option value="Geometry">Geometry</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-brain"></i> Processing Mode
+                    </label>
+                    <select id="processingMode">
+                        <option value="standard">Standard Processing</option>
+                        <option value="advanced">Advanced OCR</option>
+                        <option value="batch">Batch Processing</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card">
+                <button type="button" class="btn" id="extractBtn" onclick="processFiles()">
+                    <i class="fas fa-rocket"></i> Extract Questions
+                </button>
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Initializing...</div>
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div class="card result-container" id="resultContainer">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar"></i>
+                    Results
+                </div>
+                <div id="resultContent"></div>
+                
+                <!-- Export Options -->
+                <div class="export-options">
+                    <button class="export-btn" onclick="exportData('json')">
+                        <i class="fas fa-code"></i>
+                        JSON
+                    </button>
+                    <button class="export-btn" onclick="exportData('csv')">
+                        <i class="fas fa-table"></i>
+                        CSV
+                    </button>
+                    <button class="export-btn" onclick="exportData('txt')">
+                        <i class="fas fa-file-alt"></i>
+                        TXT
+                    </button>
+                    <button class="export-btn" onclick="exportData('pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        PDF
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Remove all DeepSeek/OpenAI API calls from frontend. Only handle form submission and result display.
+        // Global variables
+        let selectedFiles = [];
+        let processedResults = [];
+        let isProcessing = false;
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('extractorForm');
-            const progress = document.getElementById('progress');
-            const result = document.getElementById('result');
-            const resultMessage = document.getElementById('resultMessage');
-            const questionsPreview = document.getElementById('questionsPreview');
-            const extractBtn = document.getElementById('extractBtn');
-            const fileInput = document.getElementById('pdfFile');
-            const fileLabel = document.querySelector('.file-upload-label');
+            initializeApp();
+            setupEventListeners();
+            loadSavedSettings();
+        });
 
-            fileInput.addEventListener('change', (e) => {
-                const fileName = e.target.files[0]?.name || 'No file selected';
-                fileLabel.innerHTML = `<div>📄 ${fileName}</div><small>Click to change file</small>`;
+        function initializeApp() {
+            // Clear form inputs
+            document.getElementById('airtableKey').value = '';
+            document.getElementById('airtableBase').value = '';
+            selectedFiles = [];
+            updateFileList();
+            
+            // Load saved API keys if enabled
+            if (localStorage.getItem('saveKeys') === 'true') {
+                const savedKey = localStorage.getItem('airtableKey');
+                const savedBase = localStorage.getItem('airtableBase');
+                if (savedKey) document.getElementById('airtableKey').value = savedKey;
+                if (savedBase) document.getElementById('airtableBase').value = savedBase;
+            }
+        }
+
+        function setupEventListeners() {
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // File input change
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Drag and drop
+            fileUploadArea.addEventListener('click', () => fileInput.click());
+            fileUploadArea.addEventListener('dragover', handleDragOver);
+            fileUploadArea.addEventListener('dragleave', handleDragLeave);
+            fileUploadArea.addEventListener('drop', handleDrop);
+
+            // Settings
+            document.getElementById('saveKeys').checked = localStorage.getItem('saveKeys') === 'true';
+        }
+
+        // File handling functions
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            addFilesToQueue(files);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.target.closest('.file-upload-area').classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.target.closest('.file-upload-area').classList.remove('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.target.closest('.file-upload-area').classList.remove('dragover');
+            const files = Array.from(event.dataTransfer.files).filter(file => file.type === 'application/pdf');
+            addFilesToQueue(files);
+        }
+
+        function addFilesToQueue(files) {
+            files.forEach(file => {
+                if (file.type === 'application/pdf' && file.size <= 10 * 1024 * 1024) { // 10MB limit
+                    const fileObj = {
+                        id: Date.now() + Math.random(),
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        status: 'pending'
+                    };
+                    selectedFiles.push(fileObj);
+                }
             });
+            updateFileList();
+            showToast(`Added ${files.length} file(s) to queue`, 'success');
+        }
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                progress.style.display = 'block';
-                extractBtn.disabled = true;
-                result.style.display = 'none';
-                resultMessage.textContent = '';
-                questionsPreview.innerHTML = '';
+        function removeFile(fileId) {
+            selectedFiles = selectedFiles.filter(f => f.id !== fileId);
+            updateFileList();
+        }
 
-                const formData = new FormData(form);
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
 
-                fetch('/upload', {
+            fileList.innerHTML = selectedFiles.map(file => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <i class="fas fa-file-pdf"></i>
+                        <div>
+                            <div>${file.name}</div>
+                            <small>${formatFileSize(file.size)} • ${file.status}</small>
+                        </div>
+                    </div>
+                    <button class="file-remove" onclick="removeFile(${file.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Processing functions
+        async function processFiles() {
+            if (selectedFiles.length === 0) {
+                showToast('Please select at least one PDF file', 'error');
+                return;
+            }
+
+            const airtableKey = document.getElementById('airtableKey').value;
+            const airtableBase = document.getElementById('airtableBase').value;
+
+            if (!airtableKey || !airtableBase) {
+                showToast('Please enter your Airtable credentials', 'error');
+                return;
+            }
+
+            // Save API keys if enabled
+            if (document.getElementById('saveKeys').checked) {
+                localStorage.setItem('airtableKey', airtableKey);
+                localStorage.setItem('airtableBase', airtableBase);
+                localStorage.setItem('saveKeys', 'true');
+            }
+
+            isProcessing = true;
+            showLoadingOverlay(true);
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('extractBtn').disabled = true;
+
+            processedResults = [];
+            
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                await processFile(file, i + 1, selectedFiles.length);
+            }
+
+            showLoadingOverlay(false);
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('extractBtn').disabled = false;
+            isProcessing = false;
+
+            displayResults();
+        }
+
+        async function processFile(fileObj, index, total) {
+            try {
+                updateProgress((index - 1) / total * 100, `Processing ${fileObj.name}...`);
+                fileObj.status = 'processing';
+                updateFileList();
+
+                const formData = new FormData();
+                formData.append('pdfFile', fileObj.file);
+                formData.append('airtableKey', document.getElementById('airtableKey').value);
+                formData.append('airtableBase', document.getElementById('airtableBase').value);
+                formData.append('defaultTopic', document.getElementById('defaultTopic').value);
+
+                const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    progress.style.display = 'none';
-                    extractBtn.disabled = false;
-                    result.style.display = 'block';
-                    if (data.success) {
-                        result.className = 'result success';
-                        resultMessage.textContent = data.message;
-                        questionsPreview.innerHTML = '';
-                    } else {
-                        result.className = 'result error';
-                        resultMessage.textContent = 'Error: ' + (data.error || 'Unknown error');
-                    }
-                })
-                .catch(err => {
-                    progress.style.display = 'none';
-                    extractBtn.disabled = false;
-                    result.style.display = 'block';
-                    result.className = 'result error';
-                    resultMessage.textContent = 'Error: ' + err.message;
                 });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    fileObj.status = 'completed';
+                    processedResults.push({
+                        file: fileObj.name,
+                        success: true,
+                        message: result.message,
+                        data: result.data || {}
+                    });
+                    showToast(`Successfully processed ${fileObj.name}`, 'success');
+                } else {
+                    fileObj.status = 'error';
+                    processedResults.push({
+                        file: fileObj.name,
+                        success: false,
+                        error: result.error || 'Unknown error'
+                    });
+                    showToast(`Failed to process ${fileObj.name}`, 'error');
+                }
+
+                updateProgress(index / total * 100, `Completed ${index}/${total} files`);
+                updateFileList();
+
+            } catch (error) {
+                fileObj.status = 'error';
+                processedResults.push({
+                    file: fileObj.name,
+                    success: false,
+                    error: error.message
+                });
+                showToast(`Error processing ${fileObj.name}: ${error.message}`, 'error');
+                updateFileList();
+            }
+        }
+
+        function displayResults() {
+            const resultContainer = document.getElementById('resultContainer');
+            const resultContent = document.getElementById('resultContent');
+
+            const successCount = processedResults.filter(r => r.success).length;
+            const errorCount = processedResults.length - successCount;
+
+            let resultHtml = `
+                <div class="result success">
+                    <h4><i class="fas fa-check-circle"></i> Processing Complete</h4>
+                    <p>Successfully processed ${successCount} file(s)</p>
+                    ${errorCount > 0 ? `<p style="color: var(--error-color);">Failed to process ${errorCount} file(s)</p>` : ''}
+                </div>
+            `;
+
+            processedResults.forEach(result => {
+                resultHtml += `
+                    <div class="result ${result.success ? 'success' : 'error'}">
+                        <h5>${result.file}</h5>
+                        <p>${result.success ? result.message : result.error}</p>
+                    </div>
+                `;
             });
+
+            resultContent.innerHTML = resultHtml;
+            resultContainer.style.display = 'block';
+        }
+
+        // UI helper functions
+        function updateProgress(percent, text) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function showLoadingOverlay(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+            
+            if (show) {
+                const messages = [
+                    'Analyzing PDF structure...',
+                    'Extracting text content...',
+                    'Processing with OCR...',
+                    'Identifying questions...',
+                    'Uploading to Airtable...'
+                ];
+                
+                let messageIndex = 0;
+                const messageInterval = setInterval(() => {
+                    if (!show || !isProcessing) {
+                        clearInterval(messageInterval);
+                        return;
+                    }
+                    document.getElementById('loadingText').textContent = messages[messageIndex % messages.length];
+                    messageIndex++;
+                }, 2000);
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Settings functions
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+        }
+
+        function toggleSaveKeys() {
+            const checked = document.getElementById('saveKeys').checked;
+            localStorage.setItem('saveKeys', checked.toString());
+            
+            if (!checked) {
+                localStorage.removeItem('airtableKey');
+                localStorage.removeItem('airtableBase');
+                showToast('API keys cleared from storage', 'success');
+            } else {
+                showToast('API keys will be saved locally', 'success');
+            }
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            localStorage.setItem('theme', theme);
+            showToast(`Theme changed to ${theme}`, 'success');
+            // Theme implementation would go here
+        }
+
+        function loadSavedSettings() {
+            const theme = localStorage.getItem('theme');
+            if (theme) {
+                document.getElementById('themeSelect').value = theme;
+            }
+        }
+
+        // Export functions
+        function exportData(format) {
+            if (processedResults.length === 0) {
+                showToast('No data to export', 'error');
+                return;
+            }
+
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const filename = `pdf-extraction-results-${timestamp}`;
+
+            switch (format) {
+                case 'json':
+                    exportJSON(processedResults, filename);
+                    break;
+                case 'csv':
+                    exportCSV(processedResults, filename);
+                    break;
+                case 'txt':
+                    exportTXT(processedResults, filename);
+                    break;
+                case 'pdf':
+                    showToast('PDF export coming soon!', 'warning');
+                    break;
+            }
+        }
+
+        function exportJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            downloadFile(blob, `${filename}.json`);
+            showToast('JSON export downloaded', 'success');
+        }
+
+        function exportCSV(data, filename) {
+            const headers = ['File', 'Status', 'Message/Error'];
+            const rows = data.map(item => [
+                item.file,
+                item.success ? 'Success' : 'Error',
+                item.success ? item.message : item.error
+            ]);
+            
+            const csvContent = [headers, ...rows].map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            downloadFile(blob, `${filename}.csv`);
+            showToast('CSV export downloaded', 'success');
+        }
+
+        function exportTXT(data, filename) {
+            const content = data.map(item => 
+                `File: ${item.file}\\nStatus: ${item.success ? 'Success' : 'Error'}\\nDetails: ${item.success ? item.message : item.error}\\n\\n`
+            ).join('');
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            downloadFile(blob, `${filename}.txt`);
+            showToast('TXT export downloaded', 'success');
+        }
+
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                toggleSettings();
+            }
+            if (e.key === 'Escape') {
+                const panel = document.getElementById('settingsPanel');
+                if (panel.classList.contains('open')) {
+                    toggleSettings();
+                }
+            }
         });
     </script>
 </body>
